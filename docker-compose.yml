@@ -1,0 +1,13 @@
+version: '3'
+services:
+  main:
+    build:
+        context: .
+        args:
+            - http_proxy
+            - https_proxy
+            - no_proxy
+    image: cubeearth/tools-coreos-setup-iso
+    volumes:
+    - ${PROFILES_DIR}:/tmp/apk/profiles:ro
+    - ${OUTPUT_ISO_DIR}:/iso:rw
