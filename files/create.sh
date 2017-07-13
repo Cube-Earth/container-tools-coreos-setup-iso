@@ -14,8 +14,15 @@ workdir=/tmp/workdir
 rm -Rf $workdir
 mkdir -p $workdir
 
+function show_title
+{
+  echo "######### $1 ########################################"
+}
+
 function create_rootfs
 {
+  show_title "rootfs"
+
   outdir=$1
   tmp_initfs=$workdir/initfs
   tmp2_initfs=$workdir/initfs2
@@ -39,6 +46,8 @@ function create_rootfs
 
 function create_modloop
 {
+  show_title "modloop"
+
   outdir=$1
   tmp_modloop=$workdir/modloop
 
@@ -70,6 +79,8 @@ function create_modloop
 
 function create_syslinux_dir
 {
+  show_title "syslinux"
+
   outdir=$1
   mkdir -p $outdir
   for f in isolinux.bin ldlinux.c32 libutil.c32 libcom32.c32 mboot.c32
@@ -89,6 +100,8 @@ EOF
 
 function create_boot_files
 {
+	show_title "boot files"
+
 	# creates System.map-grsec, config-grsec and vmlinuz-grsec in /boot
 
 	outdir=$1
@@ -102,13 +115,17 @@ function create_boot_files
 
 function create_apks
 {
+  show_title "apks"
+
   outdir=$1
   
   pkgdir=$outdir/`uname -m`
   mkdir -p $pkgdir
   touch $outdir/.boot_repository
+ 
+####  sudo apk add --keys-dir /etc/apk/keys --repositories-file /etc/apk/repositories --initdb --update --no-script --root $tmp_modloop/tmp linux-firmware dahdi-linux linux-grsec dahdi-linux-grsec xtables-addons-grsec mkinitfs #alpine-base
     
-  sudo apk fetch --repository /home/build/packages/tmp --keys-dir /etc/apk/keys --repositories-file /etc/apk/repositories --output $pkgdir --recursive alpine-base e2fsprogs e2fsprogs-extra util-linux newt setup-coreos-installer
+  sudo apk fetch --repository /home/build/packages/tmp --keys-dir /etc/apk/keys --repositories-file /etc/apk/repositories --output $pkgdir --recursive --update alpine-base e2fsprogs e2fsprogs-extra util-linux newt setup-coreos-installer
   
   sudo apk index --description "coreos-setup-`date '+%y%m%d'` `date '+%y%m%d'`" --rewrite-arch `uname -m` -o $pkgdir/APKINDEX.tar.gz $pkgdir/*.apk
 
@@ -117,6 +134,8 @@ function create_apks
 
 function create_apk
 {
+  show_title "apk"
+
   cd /tmp/apk
   sudo chmod o=rwx /dev/tty*
   abuild -r checksum rootpkg index
@@ -143,6 +162,7 @@ function create_iso
 
   create_apks $tmp_iso/apks
   
+  show_title "iso"
   xorrisofs -V "COREOS SETUP" -follow-links -J -l -R -b boot/syslinux/isolinux.bin -c boot/syslinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o /iso/coreos-setup.iso $tmp_iso/ && isohybrid /iso/coreos-setup.iso
 }
 

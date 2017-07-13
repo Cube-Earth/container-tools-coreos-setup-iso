@@ -22,6 +22,7 @@ RUN sudo chown -R build /tmp && \
 	
 WORKDIR /tmp
 
+VOLUME /tmp/apk/profiles
 VOLUME /iso
 
 ENTRYPOINT [ "./create.sh" ]
