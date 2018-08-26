@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 function show_error
 {
@@ -11,6 +11,8 @@ function mount_oemfs
 {
 cdrom_dev=`blkid | grep -e 'TYPE="iso9660"' | cut -d: -f1`
 [[ -z "$cdrom_dev" ]] && show_error "No CD ROM found!"
+
+cdrom_dir=`mount | awk -v d="$cdrom_dev" 'match(\$0, "^" d " on") { print gensub(/^.* on (.*) type .*/, "\\\\1", "g", \$0) }'`
 
 root_dev=`blkid | grep -e 'LABEL="ROOT"' | cut -d: -f1`
 [[ -z "$root_dev" ]] && show_error "No CoreOS installation found!"
@@ -26,7 +28,7 @@ function apply_profile
 {
   oemfs_dir=/mnt/oemfs
 
-  cp /usr/profiles/$1.ign $oemfs_dir/$1.ign
+  cp "$cdrom_dir"/profiles/$1.ign $oemfs_dir/$1.ign
   
   if [[ ! -f /mnt/oemfs/grub.cfg ]]
   then
@@ -65,31 +67,20 @@ EOF
 
 mount_oemfs
 
+let i=0
+e=()
+while read -r line; do
+	let i=$i+1
+	e+=("$i" "$line")
+done < <( ls -1 "$cdrom_dir"/profiles/*.ign | xargs -n1 -I{} basename "{}" .ign | sort )
+
 option=$(whiptail --title "Configure CoreOS" --menu "Choose the intended purpose of this host:" 15 60 5 \
-"T" "Training" \
-"D" "Development" \
-"M" "Kubernetes Master" \
-"N" "Kubernetes Node" \
+"${e[@]}" \
 "S" "Exit to Shell" 3>&1 1>&2 2>&3)
 
 [[ "$?" -eq 0 ]] || show_error "Cancelled by user"
 
 case $option in
-  T)
-  apply_profile training
-  ;;
-  
-  D)
-  apply_profile development
-  ;;
-  
-  M)
-  apply_profile k8s_master
-  ;;
-  
-  N)
-  apply_profile k8s_node
-  ;;
   
   S)
   while echo "New shell launched ..."
@@ -97,6 +88,12 @@ case $option in
     /bin/sh
   done
   ;;
+
+  *)
+  apply_profile ${e[2*$option-1]}
+  ;;
+
+
 esac
 
 show_error "Invalid option chosen"

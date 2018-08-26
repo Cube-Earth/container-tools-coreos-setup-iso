@@ -30,8 +30,8 @@ function create_rootfs
   mkdir -p $tmp_initfs $outdir
 
 
-  sudo apk add --keys-dir /etc/apk/keys --repositories-file /etc/apk/repositories --initdb --update --no-script --root $tmp_initfs linux-firmware dahdi-linux linux-grsec dahdi-linux-grsec xtables-addons-grsec mkinitfs #e2fsprogs-extra #alpine-base
-  # linux-grsec xtables-addons
+  sudo apk add --keys-dir /etc/apk/keys --repositories-file /etc/apk/repositories --initdb --update --no-script --root $tmp_initfs linux-firmware dahdi-linux linux-vanilla dahdi-linux-vanilla xtables-addons-vanilla mkinitfs #e2fsprogs-extra #alpine-base
+  # linux-vanilla xtables-addons
 
   sudo cp -r /etc/apk/keys $tmp_initfs/etc/apk/
   
@@ -41,7 +41,7 @@ function create_rootfs
 
   #strip -g $tmp_initfs/bin/* $tmp_initfs/sbin/* $tmp_initfs/lib/* 2>/dev/null
 
-  sudo mkinitfs -F "ata base bootchart cdrom squashfs ext2 ext3 ext4 mmc raid scsi usb virtio" -t $tmp2_initfs -b $tmp_initfs -o $outdir/initramfs-grsec ${MODLOOP_KERNEL_RELEASE}
+  sudo mkinitfs -F "ata base bootchart cdrom squashfs ext2 ext3 ext4 mmc raid scsi usb virtio" -t $tmp2_initfs -b $tmp_initfs -o $outdir/initramfs-vanilla ${MODLOOP_KERNEL_RELEASE}
 }
 
 function create_modloop
@@ -53,8 +53,8 @@ function create_modloop
 
   mkdir -p $tmp_modloop/tmp $outdir
 
-  sudo apk add --keys-dir /etc/apk/keys --repositories-file /etc/apk/repositories --initdb --update --no-script --root $tmp_modloop/tmp linux-firmware dahdi-linux linux-grsec dahdi-linux-grsec xtables-addons-grsec mkinitfs #alpine-base
-  # linux-grsec xtables-addons
+  sudo apk add --keys-dir /etc/apk/keys --repositories-file /etc/apk/repositories --initdb --update --no-script --root $tmp_modloop/tmp linux-firmware dahdi-linux linux-vanilla dahdi-linux-vanilla xtables-addons-vanilla mkinitfs #alpine-base
+  # linux-vanilla xtables-addons
 
   MODLOOP_KERNEL_RELEASE=`ls $tmp_modloop/tmp/lib/modules`
   
@@ -73,7 +73,7 @@ function create_modloop
   fi  
   
   sudo depmod $MODLOOP_KERNEL_RELEASE -b $tmp_modloop
-  sudo mksquashfs $tmp_modloop/lib $outdir/modloop-grsec -comp xz
+  sudo mksquashfs $tmp_modloop/lib $outdir/modloop-vanilla -comp xz
 }
 
 
@@ -91,10 +91,10 @@ function create_syslinux_dir
   cat > $outdir/syslinux.cfg << EOF
 timeout 20
 prompt 1
-default grsec
-label grsec
-    kernel /boot/vmlinuz-grsec
-    append initrd=/boot/initramfs-grsec modloop=/boot/modloop-grsec modules=loop,squashfs,sd-mod,usb-storage quiet pkgs=e2fsprogs-extra,util-linux,newt,setup-coreos-installer
+default vanilla
+label vanilla
+    kernel /boot/vmlinuz-vanilla
+    append initrd=/boot/initramfs-vanilla modloop=/boot/modloop-vanilla modules=loop,squashfs,sd-mod,usb-storage quiet pkgs=e2fsprogs-extra,util-linux,bash,newt,setup-coreos-installer
 EOF
 }
 
@@ -102,13 +102,13 @@ function create_boot_files
 {
 	show_title "boot files"
 
-	# creates System.map-grsec, config-grsec and vmlinuz-grsec in /boot
+	# creates System.map-vanilla, config-vanilla and vmlinuz-vanilla in /boot
 
 	outdir=$1
 	
 	mkdir -p $outdir
 	
-    sudo apk fetch --stdout --quiet --keys-dir /etc/apk/keys --repositories-file /etc/apk/repositories linux-grsec | tar -C $outdir -xz boot
+    sudo apk fetch --stdout --quiet --keys-dir /etc/apk/keys --repositories-file /etc/apk/repositories linux-vanilla | tar -C $outdir -xz boot
 
 }
 
@@ -123,9 +123,9 @@ function create_apks
   mkdir -p $pkgdir
   touch $outdir/.boot_repository
  
-####  sudo apk add --keys-dir /etc/apk/keys --repositories-file /etc/apk/repositories --initdb --update --no-script --root $tmp_modloop/tmp linux-firmware dahdi-linux linux-grsec dahdi-linux-grsec xtables-addons-grsec mkinitfs #alpine-base
+####  sudo apk add --keys-dir /etc/apk/keys --repositories-file /etc/apk/repositories --initdb --update --no-script --root $tmp_modloop/tmp linux-firmware dahdi-linux linux-vanilla dahdi-linux-vanilla xtables-addons-vanilla mkinitfs #alpine-base
     
-  sudo apk fetch --repository /home/build/packages/tmp --keys-dir /etc/apk/keys --repositories-file /etc/apk/repositories --output $pkgdir --recursive --update alpine-base e2fsprogs e2fsprogs-extra util-linux newt setup-coreos-installer
+  sudo apk fetch --repository /home/build/packages/tmp --keys-dir /etc/apk/keys --repositories-file /etc/apk/repositories --output $pkgdir --recursive --update alpine-base e2fsprogs e2fsprogs-extra util-linux newt bash setup-coreos-installer
   
   sudo apk index --description "coreos-setup-`date '+%y%m%d'` `date '+%y%m%d'`" --rewrite-arch `uname -m` -o $pkgdir/APKINDEX.tar.gz $pkgdir/*.apk
 
@@ -163,7 +163,7 @@ function create_iso
   create_apks $tmp_iso/apks
   
   show_title "iso"
-  xorrisofs -V "COREOS SETUP" -follow-links -J -l -R -b boot/syslinux/isolinux.bin -c boot/syslinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o /iso/coreos-setup.iso $tmp_iso/ && isohybrid /iso/coreos-setup.iso
+  xorrisofs -V "COREOS SETUP" -follow-links -J -l -R -b boot/syslinux/isolinux.bin -c boot/syslinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o /iso/coreos-setup-template.iso $tmp_iso/ && isohybrid /iso/coreos-setup-template.iso
 }
 
 create_iso

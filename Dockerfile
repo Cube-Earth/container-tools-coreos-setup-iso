@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM alpine:3.8
 
 RUN apk add --update wget ca-certificates gnupg bash sudo xorriso syslinux squashfs-tools abuild gcc alpine-sdk jq
 RUN addgroup sudo && \
@@ -9,9 +9,7 @@ RUN addgroup sudo && \
 	abuild-keygen -ian && \
 	mkdir -p /var/cache/distfiles && \
 	chgrp abuild /var/cache/distfiles && \
-	chmod g+w /var/cache/distfiles && \
-	curl -Ls `curl -s https://api.github.com/repos/Cube-Earth/tools-coreos-ct/releases/latest | jq -r '.assets[].browser_download_url'` | gunzip -c - > /usr/bin/ct && \
-	chmod +x /usr/bin/ct
+	chmod g+w /var/cache/distfiles
 	
 USER build
 
@@ -22,7 +20,7 @@ RUN sudo chown -R build /tmp && \
 	
 WORKDIR /tmp
 
-VOLUME /tmp/apk/profiles
+#VOLUME /tmp/apk/profiles
 VOLUME /iso
 
 ENTRYPOINT [ "./create.sh" ]

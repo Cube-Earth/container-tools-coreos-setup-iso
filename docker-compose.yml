@@ -9,5 +9,5 @@ services:
             - no_proxy
     image: cubeearth/tools-coreos-setup-iso
     volumes:
-    - ${PROFILES_DIR}:/tmp/apk/profiles:ro
+#    - ${PROFILES_DIR}:/tmp/apk/profiles:ro
     - ${OUTPUT_ISO_DIR}:/iso:rw
