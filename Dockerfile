@@ -15,8 +15,7 @@ USER build
 
 COPY files/ /tmp/
 
-RUN sudo chown -R build /tmp && \
-	find /tmp -name .DS_Store -delete
+RUN sudo chown -R build /tmp 
 	
 WORKDIR /tmp
 

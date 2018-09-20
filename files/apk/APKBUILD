@@ -1,4 +1,4 @@
-pkgname=setup-coreos-installer
+pkgname=setup-coreos
 pkgver=1.0
 pkgrel=0
 pkgdesc="Init scripts for setup ISO"
@@ -27,11 +27,11 @@ package() {
         find -type f ! -name "*.sh" | xargs -I{} -n1 install -Dm644 "{}" "$pkgdir/{}"
         find -type f -name "*.sh" | xargs -I{} -n1 install -Dm755 "{}" "$pkgdir/{}"
 
-        cd "$startdir/profiles"
-        mkdir -p $pkgdir/usr/profiles                                           
-        chmod 755 $pkgdir/usr $pkgdir/usr/profiles                              
+#        cd "$startdir/profiles"
+#        mkdir -p $pkgdir/usr/profiles                                           
+#        chmod 755 $pkgdir/usr $pkgdir/usr/profiles                              
                                                                                 
-        find -type f -name "*.yaml" | sed 's/\.yaml$//' | xargs -I{} -n1 /bin/sh -c "eval \"ct --in-file '{}.yaml' > '$pkgdir/usr/profiles/{}.ign'; chmod 655 '$pkgdir/usr/profiles/{}.ign'\""
+#        find -type f -name "*.yaml" | sed 's/\.yaml$//' | xargs -I{} -n1 /bin/sh -c "eval \"ct --in-file '{}.yaml' > '$pkgdir/usr/profiles/{}.ign'; chmod 655 '$pkgdir/usr/profiles/{}.ign'\""
 
 }
 

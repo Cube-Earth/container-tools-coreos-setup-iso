@@ -37,7 +37,9 @@ set linux_append="coreos.config.url=oem:///$1.ign"
 EOF
   elif ! grep -E '^set linux_append=".*"$' $oemfs_dir/grub.cfg > /dev/null 2>&1
   then
-    show_error "Malformed grub.cfg"
+    cat > $oemfs_dir/grub.cfg << EOF
+set linux_append="coreos.config.url=oem:///$1.ign"
+EOF
   elif grep -E '[ \"]coreos\.config\.url=' $oemfs_dir/grub.cfg > /dev/null 2>&1
   then
 	sed -i -re "s#([ \"]coreos\.config\.url=)([^ \"]+)#\\1oem:///$1.ign#" $oemfs_dir/grub.cfg

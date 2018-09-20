@@ -125,7 +125,7 @@ function create_apks
  
 ####  sudo apk add --keys-dir /etc/apk/keys --repositories-file /etc/apk/repositories --initdb --update --no-script --root $tmp_modloop/tmp linux-firmware dahdi-linux linux-vanilla dahdi-linux-vanilla xtables-addons-vanilla mkinitfs #alpine-base
     
-  sudo apk fetch --repository /home/build/packages/tmp --keys-dir /etc/apk/keys --repositories-file /etc/apk/repositories --output $pkgdir --recursive --update alpine-base e2fsprogs e2fsprogs-extra util-linux newt bash setup-coreos-installer
+  sudo apk fetch --repository /home/build/packages/tmp --keys-dir /etc/apk/keys --repositories-file /etc/apk/repositories --output $pkgdir --recursive --update alpine-base e2fsprogs e2fsprogs-extra util-linux newt bash setup-coreos
   
   sudo apk index --description "coreos-setup-`date '+%y%m%d'` `date '+%y%m%d'`" --rewrite-arch `uname -m` -o $pkgdir/APKINDEX.tar.gz $pkgdir/*.apk
 
